@@ -194,53 +194,6 @@ def test_single_LR(dataset,model_path, full_classifier_path, part_classifier_pat
     test_labels = test_labels.cpu().detach().numpy()
 
 
-    # # 计算特定数量的样本的置信度统计量
-    # num_samples = 80  # 想要随机选择的样本数量
-    # num_repetitions = 200  # 重复实验的次数
-
-    # # 初始化存储置信度统计量的列表
-    # first_quartile_confidences = []
-    # median_confidences = []
-    # third_quartile_confidences = []
-
-    # # 开始重复实验
-    # for _ in range(num_repetitions):
-    #     # 随机选择样本
-    #     if len(test_features_part) >= num_samples:
-    #         random_indices = np.random.choice(len(test_features_part), num_samples, replace=False)
-    #     else:
-    #         random_indices = np.arange(len(test_features_part))
-
-    #     # 获取随机选定的样本特征
-    #     subset_features = test_features_part[random_indices]
-    #     # subset_features = test_features_part
-
-    #     # 使用部分模型对这些特征进行预测并计算置信度
-    #     probs_subset = part_nn_classifier.predict_proba(subset_features)
-        
-    #     # 取每个样本预测概率最大的值作为置信度
-    #     confidences_subset = np.max(probs_subset, axis=1)
-        
-    #     # 计算当前子集的1/4位数、中位数和3/4位数的置信度
-    #     first_quartile_confidence = np.percentile(confidences_subset, 25)
-    #     median_confidence = np.median(confidences_subset)
-    #     third_quartile_confidence = np.percentile(confidences_subset, 75)
-
-    #     first_quartile_confidences.append(first_quartile_confidence)
-    #     median_confidences.append(median_confidence)
-    #     third_quartile_confidences.append(third_quartile_confidence)
-
-    # # 计算四分位数置信度值的平均值
-    # average_first_quartile_confidence = np.mean(first_quartile_confidences)
-    # average_median_confidence = np.mean(median_confidences)
-    # average_third_quartile_confidence = np.mean(third_quartile_confidences)
-
-    # # 打印四分位数置信度的平均值
-    # # print(f'Average 1/4 Quartile Confidence: {average_first_quartile_confidence}')
-    # print(f'Average 1/2 Confidence: {average_median_confidence}')
-    # # print(f'Average 3/4 Quartile Confidence: {average_third_quartile_confidence}')
-
-
     probabilities_part = part_nn_classifier.predict_proba(test_features_part)
     confidence_part = np.max(probabilities_part, axis=1)
     predicted_labels_part = np.argmax(probabilities_part, axis=1)
