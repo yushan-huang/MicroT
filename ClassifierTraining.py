@@ -5,20 +5,18 @@ from torchvision import datasets
 import torch.nn as nn
 from torch.utils.data import  DataLoader
 from tqdm import tqdm
-from math import cos, pi
-from sklearn.metrics import r2_score
 from torch.utils.data.dataset import random_split
 import sys
 sys.path.append('/home/yushan/battery-free/mcunet')
 from mcunet.model_zoo import net_id_list, build_model, download_tflite
-from classifier_train import LR_classifier, KNN_classifier, NN_classifier, kmeans_classifer
+from classifier_train import LR_classifier
 
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
-
+# If use the Part Model.
 class PartialModel(nn.Module):
     def __init__(self, original_model, num_features=40, num_classes=160):
         super(PartialModel, self).__init__()
