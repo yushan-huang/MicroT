@@ -65,15 +65,41 @@ The code for SSKD is in `SSKD.py`, here we utilized MCUNet as an example.
 
 ## 3. Joint Training
 
-The code is in `JointTraining.py'.
+The code for Joint Training is similar to SSKD, with the difference being the addition of a linear layer to the Part Model to match the dimensionality of the teacher model's embedding features. Additionally, other loss functions need to be incorporated, as referenced in the System Overview figure. For details on obtaining the Part Model:
 
-## 4. Median Calculation
+```python
+import torch
+import torch.nn as nn
 
-For the median value calculation, please refer to `median_calculation.py'.
+class PartialModel(nn.Module):
+    def __init__(self, original_model, cut_point=9, num_features=40, num_classes=160):
+        super(PartialModel, self).__init__()
+        self.feature_extractor = nn.Sequential(
+            original_model.first_conv, 
+            *original_model.blocks[0:cut_point]  # please revise the number to determin the optimal segmentation point
+        )
+        self.global_avg_pool = nn.AdaptiveAvgPool2d(output_size=1)
+
+    def forward(self, x):
+        features = self.feature_extractor(x)
+        pooled_features = self.global_avg_pool(features)
+        flattened_features = pooled_features.view(pooled_features.size(0), -1)
+        return flattened_features
+```
+
+## 4. Classifier Training
+
+The classifier training needs to be performed locally on the MCU. However, to facilitate quick validation of the method for readers, we provide a Python version here (`ClassifierTraining.py`). If you need to train the Part Model, please active and utilize `class PartialModel()` to build and initialize the Part Model.
+
+For local training on the MCU, we use STM32CUBEIDE and write the code in C.
+
+## 5. Median Calculation
+
+For the median value calculation, please refer to `median_calculation.py`.
 
 ## 5. Quantization
 
-We also provided the pipeline to quantize PyTorch model (Torch → ONNX → TensorFlow → TFLite), please refer to `quantization.ipynb'.
+We also provided the pipeline to quantize PyTorch model (Torch → ONNX → TensorFlow → TFLite), please refer to `quantization.ipynb`.
 
 We utilized onnx2tf toolbox, please refer to [6].
 
