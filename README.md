@@ -28,24 +28,35 @@ To get started and download all dependencies, run:
 ```
 pip install -r requirements.txt 
 ```
-We use the Oxford-iiit Pet (pet) [1], The caltech-ucsd birds-200-2011 (bird) [2], and LifeCLEF 2017 (plant) [3] datasets. Please refer to the reference and download them.
+For the dataset, we use the Oxford-iiit Pet (pet) [1], The caltech-ucsd birds-200-2011 (bird) [2], and LifeCLEF 2017 (plant) [3]. 
+
+For the model, we use MCUNet_int3 and ProxylessNAS_w0.3 [4].
+
+Please refer to the reference and download them.
 
 
-## 2. Motivation Experiments
+## 2. Self-Supervised Knowledge Distillation (SSKD)
 
-Fine-tuning accuracy results on noised blocks. The bset block-based accuracy is highlighted.
+For the self-supervised teacher model, we utilize DINOv2_small [5], please refer to the reference and download related model and library. 
 
-<div align="center">
-<img src="./figure/motivation_result.png" width="400"> 
-</div>
 
-The code is in `./motivation_exp`.
+The code for SSKD is in `SSKD.py`, here we utilized MCUNet as an example.
 
-(1) Train the original model, shown as `./motivation_exp/train_origin_resnet.py`. We also release the model utilised in our paper, please refer to `./motivation_exp/resnet26_model.pth`.
 
-(2) Add noise and finetune, shown as `./motivation_exp/add_noise_resnet.py`.
+## 3. Joint Training
 
-## 2. Main Experiments
+The code is in `JointTraining.py'.
+
+## 4. Median Calculation
+
+For the median value calculation, please refer to `median_calculation.py'.
+
+## 5. Quantization
+
+We also provided the pipeline to quantize PyTorch model (Torch → ONNX → TensorFlow → TFLite), please refer to `quantization.ipynb'.
+
+We utilized onnx2tf toolbox, please refer to [6].
+
 
 ### 2.1 Cifar10-C
 
@@ -125,4 +136,8 @@ Our paper and code partially reference Robustbench [1], Breeds [2], Surgical Fin
 
 [3] Herve Goeau, Pierre Bonnet, and Alexis Joly. Plant identification based on noisy web data: the amazing performance of deep learning (lifeclef 2017). CEUR Workshop Proceedings, 2017.
 
-[4] Zhang, M., Levine, S. and Finn, C., 2022. Memo: Test time robustness via adaptation and augmentation. Advances in neural information processing systems, 35, pp.38629-38642.
+[4] Lin, Ji, Wei-Ming Chen, Yujun Lin, Chuang Gan, and Song Han. "Mcunet: Tiny deep learning on iot devices." Advances in neural information processing systems 33 (2020): 11711-11722.
+
+[5] Oquab, Maxime, Timothée Darcet, Théo Moutakanni, Huy Vo, Marc Szafraniec, Vasil Khalidov, Pierre Fernandez et al. "Dinov2: Learning robust visual features without supervision." arXiv preprint arXiv:2304.07193 (2023).
+
+[6] onnx2tf, https://github.com/PINTO0309/onnx2tf
