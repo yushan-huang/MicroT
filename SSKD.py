@@ -163,20 +163,16 @@ def main():
     preprocessing_train, preprocessing_test = get_preprocessing()
     train_dataset_ori, test_dataset_ori = get_dataset(preprocessing_train, preprocessing_test)
 
-    # We load the DINOv2 model from Facebook Research: Smallest version with 21M parameters
     teacher = torch.hub.load('./dinov2/', 'dinov2_vits14',source='local').cuda() # Note: Revise the path based on the environment
-    # Freeze all layers in the base_model
+    # Freeze all layers for the teacher
     for param in teacher.parameters():
         param.requires_grad = False
     # Teacher head is expected to be (s: 384, g: 1536)
     teacher_embedding_size = 384
 
-    # student_1 = get_mobilenet_v3_student(target_embedding_size=teacher_embedding_size)
     student_1 = get_mcunet_student(target_embedding_size=teacher_embedding_size)
 
 
-    # Move models to the device
-    # DINOv2 seem to expect the model and data to be on GPU.
     teacher = teacher.to(device)
     student_1 = student_1.to(device)
 
