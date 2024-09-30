@@ -17,14 +17,13 @@ def load_lr_classifier(model_path):
 
 
 class PartialModel(nn.Module):
-    def __init__(self, original_model, num_features=40, num_classes=160):
+    def __init__(self, original_model, cut_point=9, num_features=40, num_classes=160):
         super(PartialModel, self).__init__()
         self.feature_extractor = nn.Sequential(
             original_model.first_conv, 
-            *original_model.blocks[0:9]  # please revise the number to determin the optimal segmentation point
+            *original_model.blocks[0:cut_point]  # please revise the number to determin the optimal segmentation point
         )
         self.global_avg_pool = nn.AdaptiveAvgPool2d(output_size=1)
-
 
     def forward(self, x):
         features = self.feature_extractor(x)
@@ -116,7 +115,7 @@ def get_dataset(dataset_name):
     
     elif dataset_name == 'bird':
 
-        parent_folder = '/home/yushan/battery-free/bird' 
+        parent_folder = './bird' 
 
 
         preprocess = tr.Compose([
