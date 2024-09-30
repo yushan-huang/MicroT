@@ -9,7 +9,6 @@ from tqdm import tqdm
 from torch.utils.data.dataset import random_split
 from sklearn.metrics import accuracy_score
 from mcunet.model_zoo import net_id_list, build_model, download_tflite
-from classifier_train import LR_classifier
 import joblib
 
 

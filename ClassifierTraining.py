@@ -9,8 +9,7 @@ from torch.utils.data.dataset import random_split
 import sys
 sys.path.append('/home/yushan/battery-free/mcunet')
 from mcunet.model_zoo import net_id_list, build_model, download_tflite
-from classifier_train import LR_classifier
-
+from sklearn.linear_model import LogisticRegression
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -32,6 +31,14 @@ class PartialModel(nn.Module):
         pooled_features = self.global_avg_pool(features)
         flattened_features = pooled_features.view(pooled_features.size(0), -1)
         return flattened_features
+
+
+
+def LR_classifier (train_features, train_labels, test_features, test_labels, epochs=200, C=1):
+    log_reg = LogisticRegression(Multi_class="multinomial", solver="lbfgs", max_iter=epochs, C=C)
+    log_reg.fit(train_features, train_labels)
+    accuracy = log_reg.score(test_features, test_labels)
+    return accuracy, log_reg
 
 
 def get_mcunet_student(model_path):
