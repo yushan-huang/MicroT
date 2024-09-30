@@ -8,15 +8,9 @@ from torch.utils.data import  DataLoader
 from tqdm import tqdm
 from torch.utils.data.dataset import random_split
 from sklearn.metrics import accuracy_score
-import sys
-sys.path.append('/home/yushan/battery-free/mcunet')
-sys.path.append('/home/yushan/battery-free/new_pipeline')
 from mcunet.model_zoo import net_id_list, build_model, download_tflite
 from classifier_train import LR_classifier
 import joblib
-import warnings
-
-warnings.filterwarnings("ignore")
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -221,12 +215,11 @@ def test_single_LR(dataset,model_path, full_classifier_path, part_classifier_pat
 
 def main():
     # single test
-    # model_path = '/home/yushan/battery-free/main_model/checkpoints_kd_mcunet_224/imagenet_kd_mcunet_224_epoch_49_3.6620807404999254.pth'
-    model_path = './imagenet_kd_mcunet_224_epoch_49_3.6620807404999254.pth'
+    model_path = './imagenet_kd_mcunet_224.pth'
 
 
-    part_classifier_path_LR = '/home/yushan/battery-free/main_classifier/LR_model_part_MCUNet_224.pkl'
-    full_classifier_path_LR = '/home/yushan/battery-free/main_classifier/LR_model_full_MCUNet_224.pkl'
+    part_classifier_path_LR = './main_classifier/LR_model_part_MCUNet_224.pkl' # the path of trained classifier
+    full_classifier_path_LR = './main_classifier/LR_model_full_MCUNet_224.pkl'
 
     confidence_threshhold_LR = 0.5
 
