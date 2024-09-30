@@ -1,22 +1,19 @@
 import torch
-import torchvision
 import torchvision.transforms as tr
 from torchvision import datasets
+import numpy as np
 import torch.nn as nn
-from torch.utils.data import  DataLoader
+from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
-from math import cos, pi
-from sklearn.metrics import r2_score
 from torch.utils.data.dataset import random_split
-import sys
-sys.path.append('/home/yushan/battery-free/mcunet')
 from mcunet.model_zoo import net_id_list, build_model, download_tflite
-from classifier_train import LR_classifier, KNN_classifier, NN_classifier, kmeans_classifer
+from classifier_train import LR_classifier
+import joblib
 
 
-
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
+def load_lr_classifier(model_path):
+    model = joblib.load(model_path)
+    return model
 
 
 class PartialModel(nn.Module):
@@ -36,6 +33,31 @@ class PartialModel(nn.Module):
         return flattened_features
 
 
+def get_features(loader, full_model, part_model):
+    full_model.eval()
+    part_model.eval()
+    features_full = []
+    features_part = []
+    labels = []
+
+    with torch.no_grad():
+        for inputs, targets in tqdm(loader):
+            inputs = inputs.cuda()
+            outputs_full = full_model(inputs) 
+            outputs_part = part_model(inputs)
+            # Collect features and labels
+            features_full.append(outputs_full.cpu())
+            features_part.append(outputs_part.cpu())
+            labels.append(targets)
+
+    # Convert the list of tensors to a single tensor
+    features_full = torch.cat(features_full, dim=0)
+    features_part = torch.cat(features_part, dim=0)
+    labels = torch.cat(labels, dim=0)
+
+    return features_full, features_part, labels
+
+
 def get_mcunet_student(model_path):
 
     model, image_size, description = build_model(net_id="mcunet-in3", pretrained=True)  # you can replace net_id with any other option from net_id_list
@@ -46,13 +68,10 @@ def get_mcunet_student(model_path):
 
     return model
 
-
-# FIXME: Placeholde that loads the CIFAR10 dataset
-def get_dataset(dataset_name) -> torch.utils.data.Dataset:
+def get_dataset(dataset_name):
 
     # data preprocessing
     image_resolution = 224
-
     
     if dataset_name == 'pet':
         preprocess = tr.Compose([
@@ -67,6 +86,9 @@ def get_dataset(dataset_name) -> torch.utils.data.Dataset:
         train_size = int(0.7 * len(dataset))
         test_size = len(dataset) - train_size
         train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
+        test_dataset_indices = torch.load('/./test_dataset_indices_pet_MCUNet_224.pth')
+        test_dataset = torch.utils.data.Subset(dataset, test_dataset_indices)
+
 
         trainloader = DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=25)
         testloader = DataLoader(test_dataset, batch_size=128, shuffle=False, num_workers=25)
@@ -86,13 +108,15 @@ def get_dataset(dataset_name) -> torch.utils.data.Dataset:
         train_size = int(0.7 * len(dataset))
         test_size = len(dataset) - train_size
         train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
+        test_dataset_indices = torch.load('./test_dataset_indices_plant_MCUNet_224.pth')
+        test_dataset = torch.utils.data.Subset(dataset, test_dataset_indices)
 
         trainloader = DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=25)
         testloader = DataLoader(test_dataset, batch_size=128, shuffle=False, num_workers=25)
     
     elif dataset_name == 'bird':
 
-        parent_folder = './bird' 
+        parent_folder = '/home/yushan/battery-free/bird' 
 
 
         preprocess = tr.Compose([
@@ -107,6 +131,8 @@ def get_dataset(dataset_name) -> torch.utils.data.Dataset:
         test_size = len(full_dataset) - train_size
 
         train_dataset, test_dataset = random_split(full_dataset, [train_size, test_size])
+        test_dataset_indices = torch.load('./test_dataset_indices_bird_MCUNet_224.pth')
+        test_dataset = torch.utils.data.Subset(full_dataset, test_dataset_indices)
 
         trainloader = DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=25)
         testloader = DataLoader(test_dataset, batch_size=128, shuffle=False, num_workers=25)
@@ -115,25 +141,8 @@ def get_dataset(dataset_name) -> torch.utils.data.Dataset:
     return trainloader, testloader
 
 
-# get embedding features from the teacher
-def get_features_from_teacher(loader, teacher):
-    teacher.eval()
-    features = []
-    labels = []
-
-    with torch.no_grad():
-        for inputs, targets in tqdm(loader):
-            inputs = inputs.cuda()
-            outputs = teacher(inputs) 
-            features.extend(outputs.cpu().detach().numpy())
-            labels.extend(targets.numpy())
-    
-    return features, labels
-
-
-def test_single(dataset,model_path):
+def test_single_LR(dataset,model_path, full_classifier_path, part_classifier_path, confidence_threshold):
     print('loading dataset')
-
     if dataset == 'pet':
         print('Dataset pet')
         num_class = 37
@@ -147,25 +156,62 @@ def test_single(dataset,model_path):
         num_class = 200
         neighbour_range = 100
     
+
     else:
         raise ValueError("Unknown dataset:{}".format(dataset))
     trainloader, testloader = get_dataset(dataset)
-    # get teacher embedding features
-    # load model
-    teacher = get_mcunet_student(model_path).cuda()
-    teacher.cuda()
-    train_features, train_labels = get_features_from_teacher(trainloader, teacher)
-    test_features, test_labels = get_features_from_teacher(testloader, teacher)
-    print('loading finished')
-
-    LR_acc,_ = LR_classifier(train_features, train_labels, test_features, test_labels)
-
-    print('LR acc:', LR_acc)
-
-def main():
-    model_path = './imagenet_kd_mcunet.pth'
-    test_single('plant',model_path)
 
 
-if __name__ == "__main__":
-    main()
+    full_model = get_mcunet_student(model_path).cuda()
+    part_model = PartialModel(full_model)
+    test_features_full, test_features_part, test_labels = get_features(testloader, full_model, part_model)
+
+    full_nn_classifier = load_lr_classifier(model_path=full_classifier_path)
+    part_nn_classifier = load_lr_classifier(model_path=part_classifier_path)
+
+    test_features_full = test_features_full
+    test_features_part = test_features_part
+    test_labels = test_labels
+
+    test_features_full = test_features_full.cpu().detach().numpy()
+    test_features_part = test_features_part.cpu().detach().numpy()
+    test_labels = test_labels.cpu().detach().numpy()
+
+
+    # confidence score calculation
+    num_samples = 10  # number of selected samples
+    num_repetitions = 200 
+
+    first_quartile_confidences = []
+    median_confidences = []
+    third_quartile_confidences = []
+
+    for _ in range(num_repetitions):
+        # random selection
+        if len(test_features_part) >= num_samples:
+            random_indices = np.random.choice(len(test_features_part), num_samples, replace=False)
+        else:
+            random_indices = np.arange(len(test_features_part))
+
+        subset_features = test_features_part[random_indices]
+
+        probs_subset = part_nn_classifier.predict_proba(subset_features)
+        
+        confidences_subset = np.max(probs_subset, axis=1)
+        
+        # 1/4, median, and 3/4 quartile
+        first_quartile_confidence = np.percentile(confidences_subset, 25)
+        median_confidence = np.median(confidences_subset)
+        third_quartile_confidence = np.percentile(confidences_subset, 75)
+
+        first_quartile_confidences.append(first_quartile_confidence)
+        median_confidences.append(median_confidence)
+        third_quartile_confidences.append(third_quartile_confidence)
+
+    average_first_quartile_confidence = np.mean(first_quartile_confidences)
+    average_median_confidence = np.mean(median_confidences)
+    average_third_quartile_confidence = np.mean(third_quartile_confidences)
+
+    print(f'Average 1/4 Quartile Confidence: {average_first_quartile_confidence}')
+    print(f'Average 1/2 Confidence: {average_median_confidence}')
+    print(f'Average 3/4 Quartile Confidence: {average_third_quartile_confidence}')
