@@ -8,7 +8,7 @@
   <strong><a href="https://netsys.doc.ic.ac.uk/">[Team]</a></strong>
 </p>
 
-Accepted to *[The 9th ACM/IEEE Symposium on Edge Computing (SEC 2024)]([https://euromlsys.eu/](https://acm-ieee-sec.org/2024/)).*
+Accepted to *[The 9th ACM/IEEE Symposium on Edge Computing (SEC 2024)](https://acm-ieee-sec.org/2024/)).*
 
 
 ## Abstract 
