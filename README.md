@@ -67,8 +67,6 @@ The code for SSKD is in `SSKD.py`, here we utilized MCUNet as an example.
 
 The code for Joint Training is similar to SSKD, with the difference being the addition of a linear layer to the Part Model to match the dimensionality of the teacher model's embedding features. Additionally, other loss functions need to be incorporated, as referenced in the System Overview figure. For details on obtaining the Part Model:
 
-# If use the Part Model.
-
 ```python
 import torch
 import torch.nn as nn
