@@ -40,7 +40,7 @@ For local inference on MCUs, MicroT with 0.5 stage-decision ratio reduce the ene
 <img src="./figure/inferencecost.png" width="400"> 
 </div>
 
-We also provice the model performance and system cost evaluations with other stage-decision ratios, please refer to the paper. 
+We also provide the model performance and system cost evaluations with other stage-decision ratios, please refer to the paper. 
 
 ## 1. Requirements
 To get started and download all dependencies, run:
