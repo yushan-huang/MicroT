@@ -22,6 +22,26 @@ Microcontroller Units (MCUs) are ideal platforms for edge applications due to th
   <h5>System Overview</h5>
 </div>
 
+For model performance, MicroT with 0.5 stage-decision ratio outperforms by 2.12 - 11.60%.
+
+<div align="center">
+<img src="./figure/performance.png" width="400"> 
+</div>
+
+For local training on MCUs, MicroT with 0.5 stage-decision ratio reduce the energy cost by up to 2.28X.
+
+<div align="center">
+<img src="./figure/trainingcost.png" width="400"> 
+</div>
+
+For local inference on MCUs, MicroT with 0.5 stage-decision ratio reduce the energy cost by 14.17%.
+
+<div align="center">
+<img src="./figure/inferencecost.png" width="400"> 
+</div>
+
+We also provice the model performance and system cost evaluations with other stage-decision ratios, please refer to the paper. 
+
 ## 1. Requirements
 To get started and download all dependencies, run:
 
