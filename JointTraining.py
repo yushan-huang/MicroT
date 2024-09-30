@@ -2,48 +2,39 @@ import torch
 import torchvision
 import torchvision.transforms as tr
 from torchvision import datasets
-import pickle
-import matplotlib.pyplot as plt
-import torch.nn.functional as F
-import random
-import numpy as np
 import torch.nn as nn
-import torch.optim as optim
-import os
-import csv
-import glob
-from torch.utils.data import Dataset, DataLoader, Subset
+from torch.utils.data import  DataLoader
 from tqdm import tqdm
 from math import cos, pi
 from sklearn.metrics import r2_score
 from torch.utils.data.dataset import random_split
-from typing import Optional
-from torch.optim import lr_scheduler
-from sklearn.linear_model import LogisticRegression
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import KFold
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.cluster import KMeans
-from scipy.spatial.distance import cosine
-from collections import Counter
-import ssl
 import sys
 sys.path.append('/home/yushan/battery-free/mcunet')
 from mcunet.model_zoo import net_id_list, build_model, download_tflite
 from classifier_train import LR_classifier, KNN_classifier, NN_classifier, kmeans_classifer
-import os
-from PIL import Image
-import pandas as pd
-from thop import profile
-from thop import clever_format
-import warnings
 
-warnings.filterwarnings("ignore")
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+
+
+class PartialModel(nn.Module):
+    def __init__(self, original_model, num_features=40, num_classes=160):
+        super(PartialModel, self).__init__()
+        self.feature_extractor = nn.Sequential(
+            original_model.first_conv, 
+            *original_model.blocks[0:9]  # please revise the number to determin the optimal segmentation point
+        )
+        self.global_avg_pool = nn.AdaptiveAvgPool2d(output_size=1)
+
+
+    def forward(self, x):
+        features = self.feature_extractor(x)
+        pooled_features = self.global_avg_pool(features)
+        flattened_features = pooled_features.view(pooled_features.size(0), -1)
+        return flattened_features
+
 
 def get_mcunet_student(model_path):
 
