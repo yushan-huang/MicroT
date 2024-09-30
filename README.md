@@ -22,6 +22,26 @@ Microcontroller Units (MCUs) are ideal platforms for edge applications due to th
   <h5>System Overview</h5>
 </div>
 
+For model performance, MicroT with 0.5 stage-decision ratio outperforms by 2.12 - 11.60%.
+
+<div align="center">
+<img src="./figure/performance.png" width="400"> 
+</div>
+
+For local training on MCUs, MicroT with 0.5 stage-decision ratio reduce the energy cost by up to 2.28X.
+
+<div align="center">
+<img src="./figure/trainingcost.png" width="400"> 
+</div>
+
+For local inference on MCUs, MicroT with 0.5 stage-decision ratio reduce the energy cost by 14.17%.
+
+<div align="center">
+<img src="./figure/inferencecost.png" width="400"> 
+</div>
+
+We also provide the model performance and system cost evaluations with other stage-decision ratios, please refer to the paper. 
+
 ## 1. Requirements
 To get started and download all dependencies, run:
 
@@ -58,54 +78,6 @@ We also provided the pipeline to quantize PyTorch model (Torch → ONNX → Tens
 We utilized onnx2tf toolbox, please refer to [6].
 
 
-### 2.1 Cifar10-C
-
-The experimental results for the Cifar10-C dataset.
-
-<div align="center">
-<img src="./figure/cifar10c_result.png" width="400"> 
-</div>
-
-The original model here is same with the original model in Motivation Experiments (trained on Cifar10).
-
-To run, use `python ./exp_cifar10c.py` with appropriate model and parameters (see `exp_cifar10c.py` 113-123 for defaults).
-
-### 2.2 Living17
-
-The experimental results for the Living17 dataset.
-
-<div align="center">
-<img src="./figure/Living17_result.png" width="400"> 
-</div>
-
-The code is in `./main_exp/Living17`.
-
-(1) Train the original model, shown as `./main_exp/Living17/Living17_ResNet26_origin.py`. We also release the model for Living17 dataset utilised in our paper, please refer to `./main_exp/Living17/ResNet26_origin_Living17.pth`.
-
-(2) Add noise and finetune, shown as `./main_exp/Living17/Living17_ResNet26_finetune.py`.
-
-### 2.3 Cifar-Flip
-
-The experimental results for the Cifar-Flip dataset.
-
-<div align="center">
-<img src="./figure/cifarflip_result.png" width="400"> 
-</div>
-
-The original model here is same with the original model in Motivation Experiments (trained on Cifar10).
-
-To run, use `python ./exp_cifar10flip.py` with the appropriate model and parameters (see `exp_cifar10flip.py` 101-111 for defaults).
-
-### 2.4 System Cost
-
-The time and energy costs of block-based and full model fine-tuning. The Energy-SavingRate is calculated by comparing the current energy cost to the energy cost of full model fine-tuning.
-
-<div align="center">
-<img src="./figure/systemcost.png" width="700"> 
-</div>
-
-For the System Cost, please refer to the paper for further details.
-
 
 ## Citation
 
@@ -125,7 +97,7 @@ If you found our work useful please consider citing it:
 
 ## Acknowledgments
 
-Our paper and code partially reference Robustbench [1], Breeds [2], Surgical Fine-Tuning [3], and MEMO [4]. We would like to express our gratitude for their open-sourcing of the codebase, which served as the foundation for our work.
+We would like to express our gratitude to all references in our paper for their open-sourcing of the codebase, methodology, and dataset, which served as the foundation for our work.
 
 
 ## References
