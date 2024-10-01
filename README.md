@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>Towards Low-Energy Adaptive Personalization for Resource-Constrained Devices</h1>
+  <h1>Low-Energy On-Device Personalization for MCUs</h1>
 </div>
 
 
